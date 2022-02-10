@@ -401,7 +401,7 @@ HAL_SRC_C := $(filter-out %xx_ll_usb.c, $(HAL_SRC_C))
 endif
 
 # Ring buffer
-
+ss
 LWRB_SRC_C = lib/lwrb/src/lwrb/lwrb.c
 
 # libfixmath
