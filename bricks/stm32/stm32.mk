@@ -463,6 +463,7 @@ PBIO_SRC_C = $(addprefix lib/pbio/,\
 	src/angle.c \
 	src/battery.c \
 	src/color/conversion.c \
+	src/color/util.c \
 	src/control.c \
 	src/dcmotor.c \
 	src/drivebase.c \
