@@ -54,12 +54,12 @@ STATIC const mp_rom_obj_tuple_t pb_color_map_default = {
     {&mp_type_tuple},
     6,
     {
-        MP_OBJ_FROM_PTR(&pb_Color_RED_obj),
-        MP_OBJ_FROM_PTR(&pb_Color_YELLOW_obj),
-        MP_OBJ_FROM_PTR(&pb_Color_GREEN_obj),
-        MP_OBJ_FROM_PTR(&pb_Color_BLUE_obj),
-        MP_OBJ_FROM_PTR(&pb_Color_WHITE_obj),
-        MP_OBJ_FROM_PTR(&pb_Color_NONE_obj),
+        MP_OBJ_FROM_PTR(&pb_Color_BRICK_RED_obj),
+        MP_OBJ_FROM_PTR(&pb_Color_BRICK_YELLOW_obj),
+        MP_OBJ_FROM_PTR(&pb_Color_BRICK_GREEN_obj),
+        MP_OBJ_FROM_PTR(&pb_Color_BRICK_BLUE_obj),
+        MP_OBJ_FROM_PTR(&pb_Color_BRICK_WHITE_obj),
+        MP_OBJ_FROM_PTR(&pb_Color_BRICK_BLACK_obj),
     }
 };
 

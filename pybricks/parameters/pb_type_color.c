@@ -85,6 +85,36 @@ const pb_type_Color_obj_t pb_Color_WHITE_obj = {
     .hsv = {0, 0, 100}
 };
 
+const pb_type_Color_obj_t pb_Color_BRICK_YELLOW_obj = {
+    {&pb_type_Color},
+    .hsv = {52, 96, 90}
+};
+
+const pb_type_Color_obj_t pb_Color_BRICK_GREEN_obj = {
+    {&pb_type_Color},
+    .hsv = {140, 89, 48}
+};
+
+const pb_type_Color_obj_t pb_Color_BRICK_RED_obj = {
+    {&pb_type_Color},
+    .hsv = {357, 96, 71}
+};
+
+const pb_type_Color_obj_t pb_Color_BRICK_BLACK_obj = {
+    {&pb_type_Color},
+    .hsv = {189, 49, 17}
+};
+
+const pb_type_Color_obj_t pb_Color_BRICK_WHITE_obj = {
+    {&pb_type_Color},
+    .hsv = {0, 5, 95}
+};
+
+const pb_type_Color_obj_t pb_Color_BRICK_BLUE_obj = {
+    {&pb_type_Color},
+    .hsv = {221, 96, 67}
+};
+
 /**
  * Gets the pointer to the hsv type from a Color type.
  *
@@ -139,6 +169,12 @@ void pb_type_Color_reset(void) {
     mp_obj_dict_store(MP_OBJ_FROM_PTR(colors), MP_ROM_QSTR(MP_QSTR_GRAY),    MP_OBJ_FROM_PTR(&pb_Color_GRAY_obj));
     mp_obj_dict_store(MP_OBJ_FROM_PTR(colors), MP_ROM_QSTR(MP_QSTR_WHITE),   MP_OBJ_FROM_PTR(&pb_Color_WHITE_obj));
     mp_obj_dict_store(MP_OBJ_FROM_PTR(colors), MP_ROM_QSTR(MP_QSTR_NONE),    MP_OBJ_FROM_PTR(&pb_Color_NONE_obj));
+    mp_obj_dict_store(MP_OBJ_FROM_PTR(colors), MP_ROM_QSTR(MP_QSTR_BRICK_RED),    MP_OBJ_FROM_PTR(&pb_Color_BRICK_RED_obj));
+    mp_obj_dict_store(MP_OBJ_FROM_PTR(colors), MP_ROM_QSTR(MP_QSTR_BRICK_YELLOW), MP_OBJ_FROM_PTR(&pb_Color_BRICK_YELLOW_obj));
+    mp_obj_dict_store(MP_OBJ_FROM_PTR(colors), MP_ROM_QSTR(MP_QSTR_BRICK_GREEN),  MP_OBJ_FROM_PTR(&pb_Color_BRICK_GREEN_obj));
+    mp_obj_dict_store(MP_OBJ_FROM_PTR(colors), MP_ROM_QSTR(MP_QSTR_BRICK_BLACK),  MP_OBJ_FROM_PTR(&pb_Color_BRICK_BLACK_obj));
+    mp_obj_dict_store(MP_OBJ_FROM_PTR(colors), MP_ROM_QSTR(MP_QSTR_BRICK_WHITE),  MP_OBJ_FROM_PTR(&pb_Color_BRICK_WHITE_obj));
+    mp_obj_dict_store(MP_OBJ_FROM_PTR(colors), MP_ROM_QSTR(MP_QSTR_BRICK_BLUE),   MP_OBJ_FROM_PTR(&pb_Color_BRICK_BLUE_obj));
     MP_STATE_VM(pb_type_Color_dict) = colors;
 }
 
