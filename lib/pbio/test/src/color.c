@@ -501,7 +501,7 @@ static void test_color_hsv_cost(void *env) {
         dist = pbio_get_bicone_cost(&color_a, &color_b, chroma_weight);
 
         if (dist <= prev_dist) {
-            monotone=false;
+            monotone = false;
             break;
         }
         prev_dist = dist;
@@ -527,7 +527,7 @@ static void test_color_hsv_cost(void *env) {
         dist = pbio_get_bicone_cost(&color_a, &color_b, chroma_weight);
 
         if (dist <= prev_dist) {
-            monotone=false;
+            monotone = false;
             break;
         }
         prev_dist = dist;
@@ -553,7 +553,7 @@ static void test_color_hsv_cost(void *env) {
         dist = pbio_get_bicone_cost(&color_a, &color_b, chroma_weight);
 
         if (dist <= prev_dist) {
-            monotone=false;
+            monotone = false;
             break;
         }
         prev_dist = dist;
@@ -574,15 +574,15 @@ static void test_color_hsv_cost(void *env) {
     color_b.s = 100;
     color_b.v = 100;
 
-    for (int i=-19; i<21; i++) {
-        color_a.s = i<0 ? -i*5 : i*5;
-        color_a.h = i<0 ? 180 : 0;
-        color_a.v = 10000/(200-color_a.s); // constant lightness
+    for (int i = -19; i < 21; i++) {
+        color_a.s = i < 0 ? -i * 5 : i * 5;
+        color_a.h = i < 0 ? 180 : 0;
+        color_a.v = 10000 / (200 - color_a.s); // constant lightness
 
         dist = pbio_get_bicone_cost(&color_a, &color_b, chroma_weight);
 
         if (dist <= prev_dist) {
-            monotone=false;
+            monotone = false;
         }
         prev_dist = dist;
     }
