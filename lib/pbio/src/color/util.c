@@ -37,18 +37,19 @@ int32_t pbio_get_bicone_cost(const pbio_color_hsv_t *hsv_a, const pbio_color_hsv
     int32_t b_s = hsv_b->s;
     int32_t b_v = hsv_b->v;
 
-    // choroma (= radial coordinate in bicone) of a and b (0-100)
+    // chroma (= radial coordinate in bicone) of a and b (0-100)
     int32_t radius_a = a_v * a_s / 100;
     int32_t radius_b = b_v * b_s / 100;
 
-    // lightness (=z-coordinate in bicone) of a and b (0-200)
-    int32_t lightness_a = 200 * a_v - a_s * a_v;
-    int32_t lightness_b = 200 * b_v - b_s * b_v;
+    // lightness (= z-coordinate in bicone) of a and b (0-200)
+    int32_t lightness_a = (200 * a_v - a_s * a_v) / 100;
+    int32_t lightness_b = (200 * b_v - b_s * b_v) / 100;
 
-    // x, y and z deltas between cartesian coordinates of a and b in HSV bicone
+    // x and y deltas of a and b in HSV bicone (-200, 200)*chroma_weight
     int32_t delx = chroma_weight * (radius_b * cos_deg(b_h) - radius_a * cos_deg(a_h)) / 10000;
     int32_t dely = chroma_weight * (radius_b * sin_deg(b_h) - radius_a * sin_deg(a_h)) / 10000;
-    int32_t delz = (100 - chroma_weight) * (lightness_b - lightness_a) / 100;
+    // z delta of a and b in HSV bicone (-200, 200)*(100-chroma_weight)
+    int32_t delz = (100 - chroma_weight) * (lightness_b - lightness_a);
 
     int32_t cdist = delx * delx + dely * dely + delz * delz;
 
