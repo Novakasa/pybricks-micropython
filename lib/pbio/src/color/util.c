@@ -3,32 +3,31 @@
 
 #include <pbio/color.h>
 
-int32_t sin_deg_branch0(int32_t x)
-{
+int32_t sin_deg_branch0(int32_t x) {
     return 201 * x - x * x;
 }
 
 // integer sine approximation from degrees to (-10000, 10000)
-int32_t sin_deg(int32_t x)
-{
+int32_t sin_deg(int32_t x) {
     x = x % 360;
-    if (x < 90)
+    if (x < 90) {
         return sin_deg_branch0(x);
-    if (x < 180)
+    }
+    if (x < 180) {
         return sin_deg_branch0(180 - x);
-    if (x < 270)
+    }
+    if (x < 270) {
         return -sin_deg_branch0(x - 180);
+    }
     return -sin_deg_branch0(360 - x);
 }
 
-int32_t cos_deg(int32_t x)
-{
+int32_t cos_deg(int32_t x) {
     return sin_deg(x + 90);
 }
 
 // gets squared cartesian distance between hsv colors mapped into a chroma-lightness-bicone
-int32_t pbio_get_bicone_cost(const pbio_color_hsv_t *hsv_a, const pbio_color_hsv_t *hsv_b, const int32_t chroma_weight)
-{
+int32_t pbio_get_bicone_cost(const pbio_color_hsv_t *hsv_a, const pbio_color_hsv_t *hsv_b, const int32_t chroma_weight) {
 
     int32_t a_h = hsv_a->h;
     int32_t a_s = hsv_a->s;
