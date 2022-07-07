@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 #include <pbio/error.h>
+#include <pbio/color.h>
 
 #include "py/obj.h"
 
@@ -53,11 +54,11 @@ STATIC const mp_rom_obj_tuple_t pb_color_map_default = {
     {&mp_type_tuple},
     6,
     {
-        MP_OBJ_FROM_PTR(&pb_Color_RED_obj),
-        MP_OBJ_FROM_PTR(&pb_Color_YELLOW_obj),
-        MP_OBJ_FROM_PTR(&pb_Color_GREEN_obj),
-        MP_OBJ_FROM_PTR(&pb_Color_BLUE_obj),
-        MP_OBJ_FROM_PTR(&pb_Color_WHITE_obj),
+        MP_OBJ_FROM_PTR(&pb_Color_BRICK_RED_obj),
+        MP_OBJ_FROM_PTR(&pb_Color_BRICK_YELLOW_obj),
+        MP_OBJ_FROM_PTR(&pb_Color_BRICK_GREEN_obj),
+        MP_OBJ_FROM_PTR(&pb_Color_BRICK_BLUE_obj),
+        MP_OBJ_FROM_PTR(&pb_Color_BRICK_WHITE_obj),
         MP_OBJ_FROM_PTR(&pb_Color_NONE_obj),
     }
 };
@@ -67,36 +68,8 @@ void pb_color_map_save_default(mp_obj_t *color_map) {
     *color_map = MP_OBJ_FROM_PTR(&pb_color_map_default);
 }
 
-// Cost function between two colors a and b. The lower, the closer they are.
-static int32_t get_hsv_cost(const pbio_color_hsv_t *x, const pbio_color_hsv_t *c) {
-
-    // Calculate the hue error
-    int32_t hue_error;
-
-    if (c->s <= 5 || x->s <= 5) {
-        // When comparing against unsaturated colors,
-        // the hue error is not so relevant.
-        hue_error = 0;
-    } else {
-        hue_error = c->h > x->h ? c->h - x->h : x->h - c->h;
-        if (hue_error > 180) {
-            hue_error = 360 - hue_error;
-        }
-    }
-
-    // Calculate the value error:
-    int32_t value_error = x->v > c->v ? x->v - c->v : c->v - x->v;
-
-    // Calculate the saturation error, with extra penalty for low saturation
-    int32_t saturation_error = x->s > c->s ? x->s - c->s : c->s - x->s;
-    saturation_error += (100 - c->s) / 2;
-
-    // Total error
-    return hue_error * hue_error + 5 * saturation_error * saturation_error + 2 * value_error * value_error;
-}
-
 // Get a discrete color that matches the given hsv values most closely
-mp_obj_t pb_color_map_get_color(mp_obj_t *color_map, pbio_color_hsv_t *hsv) {
+mp_obj_t pb_color_map_get_color(mp_obj_t *color_map, pbio_color_hsv_t *hsv, const int chroma_weight) {
 
     // Unpack the main list
     mp_obj_t *colors;
@@ -112,7 +85,7 @@ mp_obj_t pb_color_map_get_color(mp_obj_t *color_map, pbio_color_hsv_t *hsv) {
     for (size_t i = 0; i < n; i++) {
 
         // Evaluate the cost function
-        cost_now = get_hsv_cost(hsv, pb_type_Color_get_hsv(colors[i]));
+        cost_now = pbio_get_bicone_cost(hsv, pb_type_Color_get_hsv(colors[i]), chroma_weight);
 
         // If cost is less than before, update the minimum and the match
         if (cost_now < cost_min) {
@@ -129,29 +102,38 @@ mp_obj_t pb_color_map_get_color(mp_obj_t *color_map, pbio_color_hsv_t *hsv) {
 typedef struct _pb_ColorSensor_obj_t {
     mp_obj_base_t base;
     mp_obj_t color_map;
+    int32_t chroma_weight;
 } pb_ColorSensor_obj_t;
 
 // pybricks._common.ColorDistanceSensor.detectable_colors
 STATIC mp_obj_t pupdevices_ColorDistanceSensor_detectable_colors(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     PB_PARSE_ARGS_METHOD(n_args, pos_args, kw_args,
         pb_ColorSensor_obj_t, self,
-        PB_ARG_DEFAULT_NONE(colors));
+        PB_ARG_DEFAULT_NONE(colors),
+        PB_ARG_DEFAULT_NONE(chroma_weight));
 
     // If no arguments are given, return current map
-    if (colors_in == mp_const_none) {
+    if ((colors_in == mp_const_none) && (chroma_weight_in == mp_const_none)) {
         return self->color_map;
     }
 
-    // If arguments given, ensure all tuple elements have the right type
-    mp_obj_t *color_objs;
-    size_t n;
-    mp_obj_get_array(colors_in, &n, &color_objs);
-    for (size_t i = 0; i < n; i++) {
-        pb_assert_type(color_objs[i], &pb_type_Color);
+    // If colors argument given, ensure all tuple elements have the right type
+    if (colors_in != mp_const_none) {
+        mp_obj_t *color_objs;
+        size_t n;
+        mp_obj_get_array(colors_in, &n, &color_objs);
+        for (size_t i = 0; i < n; i++) {
+            pb_assert_type(color_objs[i], &pb_type_Color);
+        }
+
+        // Save the given map
+        self->color_map = colors_in;
     }
 
-    // Save the given map
-    self->color_map = colors_in;
+    // If given, set new chroma_weight
+    if (chroma_weight_in != mp_const_none) {
+        self->chroma_weight = pb_obj_get_pct(chroma_weight_in);
+    }
 
     return mp_const_none;
 }

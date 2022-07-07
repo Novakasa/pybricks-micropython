@@ -348,11 +348,334 @@ static void test_color_hsv_compression(void *env) {
     tt_want_int_op(hsv.v, ==, expanded.v);
 }
 
+static void test_color_hsv_cost(void *env) {
+    pbio_color_hsv_t color_a;
+    pbio_color_hsv_t color_b;
+    int32_t dist;
+    int32_t chroma_weight = 50;
+
+    // color compared to itself should give 0
+    color_a.h = 0;
+    color_a.s = 100;
+    color_a.v = 100;
+    tt_want_int_op(pbio_get_bicone_cost(&color_a, &color_a, chroma_weight), ==, 0);
+
+    // blacks with different saturations/hues should be the same
+    color_a.h = 230;
+    color_a.s = 23;
+    color_a.v = 0;
+
+    color_b.h = 23;
+    color_b.s = 99;
+    color_b.v = 0;
+    tt_want_int_op(pbio_get_bicone_cost(&color_a, &color_b, chroma_weight), ==, 0);
+
+    // colors with different hues should be different when value>0 and saturation>0
+    color_a.h = 230;
+    color_a.s = 99;
+    color_a.v = 100;
+
+    color_b.h = 23;
+    color_b.s = 99;
+    color_b.v = 100;
+    tt_want_int_op(pbio_get_bicone_cost(&color_a, &color_b, chroma_weight), >, 0);
+
+    // grays with different hues should be the same
+    color_a.h = 230;
+    color_a.s = 0;
+    color_a.v = 50;
+
+    color_b.h = 23;
+    color_b.s = 0;
+    color_b.v = 50;
+    tt_want_int_op(pbio_get_bicone_cost(&color_a, &color_b, chroma_weight), ==, 0);
+
+    // distance should be greater when saturation is greater
+    color_a.h = 30;
+    color_a.s = 20;
+    color_a.v = 70;
+
+    color_b.h = 60;
+    color_b.s = 20;
+    color_b.v = 70;
+
+    dist = pbio_get_bicone_cost(&color_a, &color_b, chroma_weight);
+
+    color_a.h = 30;
+    color_a.s = 40;
+    color_a.v = 70;
+
+    color_b.h = 60;
+    color_b.s = 40;
+    color_b.v = 70;
+
+    tt_want_int_op(pbio_get_bicone_cost(&color_a, &color_b, chroma_weight), >, dist);
+
+    // resolve colors that are close
+    color_a.h = 30;
+    color_a.s = 20;
+    color_a.v = 70;
+
+    color_b.h = 35;
+    color_b.s = 20;
+    color_b.v = 70;
+
+    tt_want_int_op(pbio_get_bicone_cost(&color_a, &color_b, chroma_weight), >, 0);
+
+    color_a.h = 30;
+    color_a.s = 20;
+    color_a.v = 70;
+
+    color_b.h = 30;
+    color_b.s = 25;
+    color_b.v = 70;
+
+    tt_want_int_op(pbio_get_bicone_cost(&color_a, &color_b, chroma_weight), >, 0);
+
+    color_a.h = 30;
+    color_a.s = 20;
+    color_a.v = 70;
+
+    color_b.h = 30;
+    color_b.s = 20;
+    color_b.v = 75;
+
+    tt_want_int_op(pbio_get_bicone_cost(&color_a, &color_b, chroma_weight), >, 0);
+
+    // hues 360 and 0 should be the same
+    color_a.h = 360;
+    color_a.s = 100;
+    color_a.v = 100;
+
+    color_b.h = 0;
+    color_b.s = 100;
+    color_b.v = 100;
+    tt_want_int_op(pbio_get_bicone_cost(&color_a, &color_b, chroma_weight), ==, 0);
+
+    // distance between hues 359 and 1 should be smaller than hues 1 and 5
+    color_a.h = 359;
+    color_a.s = 100;
+    color_a.v = 100;
+
+    color_b.h = 1;
+    color_b.s = 100;
+    color_b.v = 100;
+    dist = pbio_get_bicone_cost(&color_a, &color_b, chroma_weight);
+
+    color_a.h = 1;
+    color_a.s = 100;
+    color_a.v = 100;
+
+    color_b.h = 5;
+    color_b.s = 100;
+    color_b.v = 100;
+
+    tt_want_int_op(pbio_get_bicone_cost(&color_a, &color_b, chroma_weight), >, dist);
+
+    // when chroma_weight is 0, all colors with same values should be the same
+    color_a.h = 0;
+    color_a.s = 100;
+    color_a.v = 100;
+
+    color_b.h = 180;
+    color_b.s = 100;
+    color_b.v = 100;
+    tt_want_int_op(pbio_get_bicone_cost(&color_a, &color_b, 0), ==, 0);
+
+    // check distance is monotonous along several color paths. This should catch potential int overflows
+    int prev_dist = 0;
+    bool monotone = true;
+    chroma_weight = 50;
+
+    // along saturation
+    color_a.h = 180;
+    color_a.s = 0;
+    color_a.v = 100;
+
+    color_b.h = 180;
+    color_b.s = 0;
+    color_b.v = 100;
+
+    while (color_a.s < 100) {
+        color_a.s += 5;
+        dist = pbio_get_bicone_cost(&color_a, &color_b, chroma_weight);
+
+        if (dist <= prev_dist) {
+            monotone = false;
+            break;
+        }
+        prev_dist = dist;
+    }
+    tt_want(monotone);
+
+    // along value
+
+    prev_dist = 0;
+    monotone = true;
+    chroma_weight = 50;
+
+    color_a.h = 180;
+    color_a.s = 100;
+    color_a.v = 0;
+
+    color_b.h = 180;
+    color_b.s = 100;
+    color_b.v = 0;
+
+    while (color_a.v < 100) {
+        color_a.v += 5;
+        dist = pbio_get_bicone_cost(&color_a, &color_b, chroma_weight);
+
+        if (dist <= prev_dist) {
+            monotone = false;
+            break;
+        }
+        prev_dist = dist;
+    }
+    tt_want(monotone);
+
+    // along value, saturation 0
+
+    prev_dist = 0;
+    monotone = true;
+    chroma_weight = 50;
+
+    color_a.h = 180;
+    color_a.s = 0;
+    color_a.v = 0;
+
+    color_b.h = 180;
+    color_b.s = 0;
+    color_b.v = 0;
+
+    while (color_a.v < 100) {
+        color_a.v += 5;
+        dist = pbio_get_bicone_cost(&color_a, &color_b, chroma_weight);
+
+        if (dist <= prev_dist) {
+            monotone = false;
+            break;
+        }
+        prev_dist = dist;
+    }
+    tt_want(monotone);
+
+    // along chroma
+
+    prev_dist = 0;
+    monotone = true;
+    chroma_weight = 50;
+
+    color_a.h = 180;
+    color_a.s = 100;
+    color_a.v = 100;
+
+    color_b.h = 180;
+    color_b.s = 100;
+    color_b.v = 100;
+
+    for (int i = -19; i < 21; i++) {
+        color_a.s = i < 0 ? -i * 5 : i * 5;
+        color_a.h = i < 0 ? 180 : 0;
+        color_a.v = 10000 / (200 - color_a.s); // constant lightness
+
+        dist = pbio_get_bicone_cost(&color_a, &color_b, chroma_weight);
+
+        if (dist <= prev_dist) {
+            monotone = false;
+        }
+        prev_dist = dist;
+    }
+    tt_want(monotone);
+
+    // check max distances
+    // default chroma weight
+    chroma_weight = 50;
+
+    color_a.h = 0;
+    color_a.s = 100;
+    color_a.v = 100;
+
+    color_b.h = 180;
+    color_b.s = 100;
+    color_b.v = 100;
+
+    dist = pbio_get_bicone_cost(&color_a, &color_b, chroma_weight);
+    tt_want_int_op(dist, >,  90000000);
+    tt_want_int_op(dist, <, 110000000);
+
+    color_a.h = 0;
+    color_a.s = 0;
+    color_a.v = 0;
+
+    color_b.h = 0;
+    color_b.s = 0;
+    color_b.v = 100;
+
+    dist = pbio_get_bicone_cost(&color_a, &color_b, chroma_weight);
+    tt_want_int_op(dist, >,  90000000);
+    tt_want_int_op(dist, <, 110000000);
+
+    // chroma weight 0
+    chroma_weight = 0;
+
+    color_a.h = 0;
+    color_a.s = 100;
+    color_a.v = 100;
+
+    color_b.h = 180;
+    color_b.s = 100;
+    color_b.v = 100;
+
+    dist = pbio_get_bicone_cost(&color_a, &color_b, chroma_weight);
+    tt_want_int_op(dist, ==, 0);
+
+    color_a.h = 0;
+    color_a.s = 0;
+    color_a.v = 0;
+
+    color_b.h = 0;
+    color_b.s = 0;
+    color_b.v = 100;
+
+    dist = pbio_get_bicone_cost(&color_a, &color_b, chroma_weight);
+    tt_want_int_op(dist, >, 360000000);
+    tt_want_int_op(dist, <, 440000000);
+
+    // chroma weight 100
+    chroma_weight = 100;
+
+    color_a.h = 0;
+    color_a.s = 100;
+    color_a.v = 100;
+
+    color_b.h = 180;
+    color_b.s = 100;
+    color_b.v = 100;
+
+    dist = pbio_get_bicone_cost(&color_a, &color_b, chroma_weight);
+    tt_want_int_op(dist, >, 360000000);
+    tt_want_int_op(dist, <, 440000000);
+
+    color_a.h = 0;
+    color_a.s = 0;
+    color_a.v = 0;
+
+    color_b.h = 0;
+    color_b.s = 0;
+    color_b.v = 100;
+
+    dist = pbio_get_bicone_cost(&color_a, &color_b, chroma_weight);
+    tt_want_int_op(dist, ==, 0);
+
+}
+
 struct testcase_t pbio_color_tests[] = {
     PBIO_TEST(test_rgb_to_hsv),
     PBIO_TEST(test_hsv_to_rgb),
     PBIO_TEST(test_color_to_hsv),
     PBIO_TEST(test_color_to_rgb),
     PBIO_TEST(test_color_hsv_compression),
+    PBIO_TEST(test_color_hsv_cost),
     END_OF_TESTCASES
 };
