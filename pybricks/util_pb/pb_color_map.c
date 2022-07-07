@@ -59,7 +59,7 @@ STATIC const mp_rom_obj_tuple_t pb_color_map_default = {
         MP_OBJ_FROM_PTR(&pb_Color_BRICK_GREEN_obj),
         MP_OBJ_FROM_PTR(&pb_Color_BRICK_BLUE_obj),
         MP_OBJ_FROM_PTR(&pb_Color_BRICK_WHITE_obj),
-        MP_OBJ_FROM_PTR(&pb_Color_BRICK_BLACK_obj),
+        MP_OBJ_FROM_PTR(&pb_Color_NONE_obj),
     }
 };
 
