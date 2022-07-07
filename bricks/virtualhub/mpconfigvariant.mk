@@ -155,7 +155,7 @@ LIB_SRC_C += $(addprefix lib/,\
 	pbio/src/angle.c \
 	pbio/src/battery.c \
 	pbio/src/color/conversion.c \
-	src/color/util.c \
+	pbio/src/color/util.c \
 	pbio/src/control.c \
 	pbio/src/dcmotor.c \
 	pbio/src/drivebase.c \
