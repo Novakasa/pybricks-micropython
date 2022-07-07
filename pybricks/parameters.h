@@ -61,6 +61,12 @@ extern const pb_type_Color_obj_t pb_Color_NONE_obj;
 extern const pb_type_Color_obj_t pb_Color_BLACK_obj;
 extern const pb_type_Color_obj_t pb_Color_GRAY_obj;
 extern const pb_type_Color_obj_t pb_Color_WHITE_obj;
+extern const pb_type_Color_obj_t pb_Color_BRICK_YELLOW_obj;
+extern const pb_type_Color_obj_t pb_Color_BRICK_GREEN_obj;
+extern const pb_type_Color_obj_t pb_Color_BRICK_RED_obj;
+extern const pb_type_Color_obj_t pb_Color_BRICK_BLACK_obj;
+extern const pb_type_Color_obj_t pb_Color_BRICK_WHITE_obj;
+extern const pb_type_Color_obj_t pb_Color_BRICK_BLUE_obj;
 
 extern const mp_obj_type_t pb_enum_type_Direction;
 
