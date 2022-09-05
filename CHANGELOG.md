@@ -13,6 +13,8 @@
 - Implemented iterator protocol on `geometry.Matrix` class.
 - Added experimental support for multi-file
   projects ([pybricks-micropython#115]).
+- Added new calibrated `BRICK_*` colors used in the default
+  colormap ([pybricks-micropython#104]).
 
 ### Changed
 - Battery full indication (green light) comes on earlier ([support#647]).
@@ -27,6 +29,9 @@
 - On Prime Hub and Essential Hub, the user program is now stored in a section
   of the external flash that is not used by any file system of other known
   firmwares, in order to avoid compatibility issues when changing firmware.
+- New color distance function used by the color sensors that is more
+  consistent when distinguishing user-provided
+  colors ([pybricks-micropython#104]).
 
 ### Fixed
 - Fixed motors going out of sync when starting program ([support#679]).

@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 #include <pbio/error.h>
+#include <pbio/color.h>
 
 #include "py/obj.h"
 
@@ -53,11 +54,11 @@ STATIC const mp_rom_obj_tuple_t pb_color_map_default = {
     {&mp_type_tuple},
     6,
     {
-        MP_OBJ_FROM_PTR(&pb_Color_RED_obj),
-        MP_OBJ_FROM_PTR(&pb_Color_YELLOW_obj),
-        MP_OBJ_FROM_PTR(&pb_Color_GREEN_obj),
-        MP_OBJ_FROM_PTR(&pb_Color_BLUE_obj),
-        MP_OBJ_FROM_PTR(&pb_Color_WHITE_obj),
+        MP_OBJ_FROM_PTR(&pb_Color_BRICK_RED_obj),
+        MP_OBJ_FROM_PTR(&pb_Color_BRICK_YELLOW_obj),
+        MP_OBJ_FROM_PTR(&pb_Color_BRICK_GREEN_obj),
+        MP_OBJ_FROM_PTR(&pb_Color_BRICK_BLUE_obj),
+        MP_OBJ_FROM_PTR(&pb_Color_BRICK_WHITE_obj),
         MP_OBJ_FROM_PTR(&pb_Color_NONE_obj),
     }
 };
@@ -65,34 +66,6 @@ STATIC const mp_rom_obj_tuple_t pb_color_map_default = {
 // Set initial default map
 void pb_color_map_save_default(mp_obj_t *color_map) {
     *color_map = MP_OBJ_FROM_PTR(&pb_color_map_default);
-}
-
-// Cost function between two colors a and b. The lower, the closer they are.
-static int32_t get_hsv_cost(const pbio_color_hsv_t *x, const pbio_color_hsv_t *c) {
-
-    // Calculate the hue error
-    int32_t hue_error;
-
-    if (c->s <= 5 || x->s <= 5) {
-        // When comparing against unsaturated colors,
-        // the hue error is not so relevant.
-        hue_error = 0;
-    } else {
-        hue_error = c->h > x->h ? c->h - x->h : x->h - c->h;
-        if (hue_error > 180) {
-            hue_error = 360 - hue_error;
-        }
-    }
-
-    // Calculate the value error:
-    int32_t value_error = x->v > c->v ? x->v - c->v : c->v - x->v;
-
-    // Calculate the saturation error, with extra penalty for low saturation
-    int32_t saturation_error = x->s > c->s ? x->s - c->s : c->s - x->s;
-    saturation_error += (100 - c->s) / 2;
-
-    // Total error
-    return hue_error * hue_error + 5 * saturation_error * saturation_error + 2 * value_error * value_error;
 }
 
 // Get a discrete color that matches the given hsv values most closely
@@ -112,7 +85,7 @@ mp_obj_t pb_color_map_get_color(mp_obj_t *color_map, pbio_color_hsv_t *hsv) {
     for (size_t i = 0; i < n; i++) {
 
         // Evaluate the cost function
-        cost_now = get_hsv_cost(hsv, pb_type_Color_get_hsv(colors[i]));
+        cost_now = pbio_get_bicone_cost(hsv, pb_type_Color_get_hsv(colors[i]));
 
         // If cost is less than before, update the minimum and the match
         if (cost_now < cost_min) {
