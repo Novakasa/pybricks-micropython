@@ -2,6 +2,7 @@
 // Copyright (c) 2018-2022 The Pybricks Authors
 
 #include "py/mpconfig.h"
+#include "shared/runtime/pyexec.h"
 #include "py/obj.h"
 #include "py/objmodule.h"
 #include "py/objstr.h"
@@ -105,6 +106,7 @@ void pb_package_pybricks_init(bool import_all) {
         if (import_all) {
             pb_package_import_all();
         }
+        pyexec_file_if_exists("my_code.py");
         nlr_pop();
     } else {
         // Print initialization or import exception.

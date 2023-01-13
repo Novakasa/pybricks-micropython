@@ -57,6 +57,9 @@ QSTR_GLOBAL_DEPENDENCIES = ../_common/mpconfigport.h ../_common_stm32/mpconfigpo
 # MicroPython feature configurations
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
 
+# Frozen Python code
+FROZEN_MANIFEST ?= ../_common_stm32/manifest.py
+
 # include py core make definitions
 include $(TOP)/py/py.mk
 
@@ -352,6 +355,17 @@ endif
 SRC_QSTR += $(PY_EXTRA_SRC_C) $(PY_STM32_SRC_C) $(PYBRICKS_PYBRICKS_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
+
+ifneq ($(FROZEN_MANIFEST),)
+CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
+CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
+CFLAGS += -DMPZ_DIG_SIZE=16
+MPY_TOOL_FLAGS += -mlongint-impl none
+endif
+
+ifneq ($(FROZEN_MANIFEST),)
+CFLAGS += -DMICROPY_MODULE_FROZEN_STR
+endif
 
 # Main firmware build targets
 TARGETS := $(BUILD)/firmware.zip
